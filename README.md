@@ -1,4 +1,4 @@
-# Webmention
+# Webmention for Laravel
 
 This package registers a `/webmention` route that accepts incoming webmentions. After validation, `source` and `target` are stored in the `webmentions` table, to be processed asynchronously.
 
