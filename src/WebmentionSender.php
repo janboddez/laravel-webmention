@@ -12,7 +12,7 @@ class WebmentionSender
         $endpoint = static::discoverEndpoint($target);
 
         if (! $endpoint) {
-            Log::error(__('No Webmention endpoint found for :target', [
+            Log::notice(__('No Webmention endpoint found for :target', [
                 'target' => $target,
             ]));
 
