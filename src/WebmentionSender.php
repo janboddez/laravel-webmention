@@ -2,13 +2,15 @@
 
 namespace janboddez\Webmention;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WebmentionSender
 {
-    public static function send(string $source, string $target): bool
+    public static function send(string $source, string $target): array
     {
+        // Find endpoint, if any.
         $endpoint = static::discoverEndpoint($target);
 
         if (! $endpoint) {
@@ -16,29 +18,33 @@ class WebmentionSender
                 'target' => $target,
             ]));
 
-            return false;
+            return [
+                'result' => false,
+                'target' => $target,
+                'endpoint' => null,
+                'status' => null,
+                'sent' => null,
+            ];
         }
 
+        // Send webmention.
         $response = Http::asForm()->post($endpoint, [
             'source' => $source,
             'target' => $target,
         ]);
 
-        if ($response->successful()) {
-            return true;
-        }
-
-        Log::error(__('Failed to send webmention to :endpoint (HTTP status: :status)', [
+        return [
+            'result' => $response->successful(),
+            'target' => $target,
             'endpoint' => $endpoint,
             'status' => $response->status(),
-        ]));
-
-        return false;
+            'sent' => Carbon::now()->toDateTimeString(),
+        ];
     }
 
     public static function discoverEndpoint(string $url): ?string
     {
-        /** @todo: Add caching. */
+        /** @todo: Use Guzzle, allow redirects. */
         $response = Http::head($url);
 
         $links = $response->header('link');
