@@ -38,6 +38,7 @@ class WebmentionSender
 
     public static function discoverEndpoint(string $url): ?string
     {
+        /** @todo: Add caching. */
         $response = Http::head($url);
 
         $links = $response->header('link');
@@ -76,6 +77,24 @@ class WebmentionSender
         }
 
         return null;
+    }
+
+    public static function findLinks(string $html): array
+    {
+        $html = mb_convert_encoding($html, 'HTML-ENTITIES', mb_detect_encoding($html));
+
+        libxml_use_internal_errors(true);
+        $doc = new \DOMDocument();
+        $doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+
+        $urls = [];
+
+        foreach ($xpath->query('//a/@href') as $result) {
+            $urls[] = $result->value;
+        }
+
+        return $urls;
     }
 
     public static function absolutizeUrl(string $url, string $baseUrl): ?string
