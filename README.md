@@ -14,3 +14,12 @@ if (WebmentionSender::send($source, $target)) {
   // Great success!
 }
 ```
+
+Or, even better, have it automatically discover any links in your post content:
+```
+$results = [];
+
+foreach (WebmentionSender::findLinks($post->content) as $target) {
+  $results[] = WebmentionSender::send($post->permalink, $target);
+}
+```
