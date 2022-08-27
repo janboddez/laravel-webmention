@@ -10,10 +10,9 @@ use janboddez\Webmention\WebmentionSender;
 ...
 
 // Somewhere in your app, like after a post is first published.
-if (WebmentionSender::send($source, $target)) {
-  // Great success!
-}
+$result = WebmentionSender::send($source, $target);
 ```
+`$result` is an associated array containing the target, endpoint, result (`true` or `false`), HTTP status code, and timestamp.
 
 Or, even better, have it automatically discover any links in your post content:
 ```
