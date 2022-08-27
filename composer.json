@@ -8,13 +8,11 @@
         }
     },
     "require": {
-        "php": "^7.3|^8",
-        "illuminate/database": "^8|^9",
-        "illuminate/http": "^8|^9",
-        "illuminate/log": "^8|^9",
-        "illuminate/support": "^8|^9",
+        "guzzlehttp/guzzle": "^7.0",
+        "laravel/framework": "^8|^9",
+        "masterminds/html5": "^2.0",
         "mf2/mf2": "^0.5",
-        "nesbot/carbon": "^2.53"
+        "symfony/dom-crawler": "^5.4"
     },
     "extra": {
         "laravel": {

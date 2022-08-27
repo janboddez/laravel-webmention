@@ -3,8 +3,10 @@
 namespace janboddez\Webmention;
 
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\DomCrawler\Crawler;
 
 class WebmentionSender
 {
@@ -44,11 +46,15 @@ class WebmentionSender
 
     public static function discoverEndpoint(string $url): ?string
     {
-        /** @todo: Use Guzzle, allow redirects. */
-        $response = Http::head($url);
+        $client = new Client([
+            'allow_redirects' => true,
+        ]);
 
-        $links = $response->header('link');
-        $links = explode(',', $links);
+        /** @todo: Set a proper user agent. */
+        $response = $client->request('HEAD', $url);
+
+        $links = $response->getHeader('Link');
+        // $links = explode(',', $links);
 
         if (! empty($links)) {
             foreach ($links as $link) {
@@ -67,19 +73,13 @@ class WebmentionSender
             return null;
         }
 
-        $content = $response->body();
-        $content = mb_convert_encoding($content, 'HTML-ENTITIES', mb_detect_encoding($content));
-
-        libxml_use_internal_errors(true);
-
-        $doc = new \DOMDocument();
-        $doc->loadHTML($content);
-
-        $xpath = new \DOMXPath($doc);
-
+        $crawler = new Crawler((string) $response->getBody());
         // phpcs:ignore Generic.Files.LineLength.TooLong
-        foreach ($xpath->query('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]/@href') as $result) {
-            return static::absolutizeUrl($result->value, $url);
+        $endpoint = $crawler->filterXPath('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]')
+            ->attr('href'); // Return the `href` of the first such element.
+
+        if ($endpoint) {
+            return static::absolutizeUrl($endpoint, $url);
         }
 
         return null;
@@ -87,20 +87,14 @@ class WebmentionSender
 
     public static function findLinks(string $html): array
     {
-        $html = mb_convert_encoding($html, 'HTML-ENTITIES', mb_detect_encoding($html));
+        $crawler = new Crawler($html);
+        $urls = $crawler->filterXPath('//a[@href]')->extract(['href']);
 
-        libxml_use_internal_errors(true);
-        $doc = new \DOMDocument();
-        $doc->loadHTML($html);
-        $xpath = new \DOMXPath($doc);
-
-        $urls = [];
-
-        foreach ($xpath->query('//a/@href') as $result) {
-            $urls[] = $result->value;
+        if (! empty($urls)) {
+            return $urls;
         }
 
-        return $urls;
+        return [];
     }
 
     public static function absolutizeUrl(string $url, string $baseUrl): ?string
