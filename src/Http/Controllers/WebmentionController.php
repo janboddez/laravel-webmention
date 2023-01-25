@@ -44,7 +44,14 @@ class WebmentionController
         // processing and allow for future, additional comment sources.
         DB::insert(
             'INSERT INTO webmentions (source, target, status, ip, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [$source, $target, 'new', filter_var($request->server('HTTP_CF_CONNECTING_IP'), FILTER_VALIDATE_IP) ? $request->server('HTTP_CF_CONNECTING_IP') : $request->ip()]
+            [
+                $source,
+                $target,
+                'new',
+                filter_var($request->server('HTTP_CF_CONNECTING_IP'), FILTER_VALIDATE_IP)
+                    ? $request->server('HTTP_CF_CONNECTING_IP')
+                    : $request->ip(),
+            ]
         );
 
         return response()->json([], 202);
