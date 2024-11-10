@@ -16,7 +16,7 @@ class WebmentionSender
         $endpoint = static::discoverEndpoint($target);
 
         if (! $endpoint) {
-            Log::notice(__('No Webmention endpoint found for :target', [
+            Log::debug(__('[Webmention] No Webmention endpoint found for :target', [
                 'target' => $target,
             ]));
 
@@ -74,10 +74,14 @@ class WebmentionSender
         }
 
         $crawler = new Crawler((string) $response->getBody());
-        // phpcs:ignore Generic.Files.LineLength.TooLong
-        $endpoint = $crawler->filterXPath('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]')
-            ->attr('href'); // Return the `href` of the first such element.
 
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        $endpoint = $crawler->filterXPath('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]');
+        if ($endpoint->count() === 0) {
+            return null;
+        }
+
+        $endpoint = $endpoint->attr('href', null); // Return the `href` of the first such element.
         if ($endpoint) {
             return static::absolutizeUrl($endpoint, $url);
         }
