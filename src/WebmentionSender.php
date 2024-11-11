@@ -10,23 +10,16 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class WebmentionSender
 {
-    public static function send(string $source, string $target): array
+    public static function send(string $source, string $target): ?array
     {
         // Find endpoint, if any.
         $endpoint = static::discoverEndpoint($target);
-
         if (! $endpoint) {
             Log::debug(__('[Webmention] No Webmention endpoint found for :target', [
                 'target' => $target,
             ]));
 
-            return [
-                'result' => false,
-                'target' => $target,
-                'endpoint' => null,
-                'status' => null,
-                'sent' => null,
-            ];
+            return null;
         }
 
         // Send webmention.
@@ -76,12 +69,12 @@ class WebmentionSender
         $crawler = new Crawler((string) $response->getBody());
 
         // phpcs:ignore Generic.Files.LineLength.TooLong
-        $endpoint = $crawler->filterXPath('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]');
-        if ($endpoint->count() === 0) {
+        $nodes = $crawler->filterXPath('(//link|//a)[contains(concat(" ", @rel, " "), " webmention ") or contains(@rel, "webmention.org")]');
+        if ($nodes->count() === 0) {
             return null;
         }
 
-        $endpoint = $endpoint->attr('href', null); // Return the `href` of the first such element.
+        $endpoint = $nodes->attr('href', null); // Return the `href` value of the first such element.
         if ($endpoint) {
             return static::absolutizeUrl($endpoint, $url);
         }
