@@ -3,7 +3,6 @@
 namespace janboddez\Webmention;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -39,25 +38,19 @@ class WebmentionSender
 
     public static function discoverEndpoint(string $url): ?string
     {
-        $client = new Client([
-            'allow_redirects' => true,
-        ]);
-
         /** @todo: Set a proper user agent. */
-        $response = $client->request('HEAD', $url);
+        $response = Http::head($url);
 
-        $links = $response->getHeader('Link');
-        // $links = explode(',', $links);
+        $links = $response->header('link');
+        $links = explode(',', $links);
 
-        if (! empty($links)) {
-            foreach ($links as $link) {
-                // phpcs:ignore Generic.Files.LineLength.TooLong
-                if (! preg_match('/<(.[^>]+)>;\s+rel\s?=\s?[\"\']?(http:\/\/)?webmention(\.org)?\/?[\"\']?/i', $link, $matches)) {
-                    continue;
-                }
-
-                return static::absolutizeUrl($matches[1], $url);
+        foreach ($links as $link) {
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            if (! preg_match('/<(.[^>]+)>;\s+rel\s?=\s?[\"\']?(http:\/\/)?webmention(\.org)?\/?[\"\']?/i', $link, $matches)) {
+                continue;
             }
+
+            return static::absolutizeUrl($matches[1], $url);
         }
 
         $response = Http::get($url);
