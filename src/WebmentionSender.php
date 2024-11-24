@@ -32,7 +32,7 @@ class WebmentionSender
             'target' => $target,
             'endpoint' => $endpoint,
             'status' => $response->status(),
-            'sent' => Carbon::now()->toDateTimeString(),
+            'sent' => now()->toDateTimeString(),
         ];
     }
 
