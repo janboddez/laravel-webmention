@@ -78,10 +78,9 @@ class WebmentionSender
     public static function findLinks(string $html): array
     {
         $crawler = new Crawler($html);
-        $urls = $crawler->filterXPath('//a[@href]')->extract(['href']);
-
-        if (! empty($urls)) {
-            return $urls;
+        $nodes = $crawler->filterXPath('//a[starts-with(@href, "http")]');
+        if ($nodes->count() > 0) {
+            return $nodes->extract(['href']);
         }
 
         return [];
