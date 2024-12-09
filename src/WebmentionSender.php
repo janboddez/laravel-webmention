@@ -2,7 +2,6 @@
 
 namespace janboddez\Webmention;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
