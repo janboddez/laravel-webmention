@@ -4,6 +4,7 @@ namespace janboddez\Webmention;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 
 class WebmentionSender
@@ -89,7 +90,7 @@ class WebmentionSender
     {
         $absoluteUrl = \Mf2\resolveUrl($baseUrl, $url);
 
-        if (! filter_var($absoluteUrl, FILTER_VALIDATE_URL)) {
+        if (! Str::isUrl($absoluteUrl, ['http', 'https'])) {
             return null;
         }
 
