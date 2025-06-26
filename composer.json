@@ -8,7 +8,7 @@
         }
     },
     "require": {
-        "laravel/framework": "^8|^9|^10|^11",
+        "laravel/framework": "^8|^9|^10|^11|^12",
         "masterminds/html5": "^2.0",
         "mf2/mf2": "^0.5",
         "symfony/dom-crawler": "^5.4"
